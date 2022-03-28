@@ -29,11 +29,11 @@ pipeline {
 def do_checkout(){
     if(ENVIRONMENT=="DEV"){
 	    stage('DEV Git Checkout') {
-	      git branch: '$ENVIRONMENT', credentialsId: d6aa4510-b9b1-44d1-b0ff-e9d3de1d5428, url: GIT_URL
+	      git branch: '$ENVIRONMENT', credentialsId: 'd6aa4510-b9b1-44d1-b0ff-e9d3de1d5428', url: GIT_URL
 	    }
     }else if (ENVIRONMENT=="PROD"){
         stage('PROD Git Checkout') {
-	      git branch: '$ENVIRONMENT', credentialsId: d6aa4510-b9b1-44d1-b0ff-e9d3de1d5428, url: GIT_URL
+	      git branch: '$ENVIRONMENT', credentialsId: 'd6aa4510-b9b1-44d1-b0ff-e9d3de1d5428', url: GIT_URL
 	    }
     }
 }
