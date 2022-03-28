@@ -16,9 +16,11 @@ pipeline {
         stash includes: '**/venv/**/*', name: 'venv'
       }
     }
-    stage('Initiate'){    
-        echo "do_checkout() function started for Environment:- ${ENVIRONMENT}"
-        do_checkout()
+    stage('Initiate'){
+	    steps{
+			echo "do_checkout() function started for Environment:- ${ENVIRONMENT}"
+	        do_checkout()        
+	    }      
     }
   }
 }
