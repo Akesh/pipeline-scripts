@@ -40,7 +40,7 @@ pipeline {
             sh "zip -qr ${BUILD_ID}.zip *"
             sh "ls *.zip"
           }
-          sh 'aws cloudformation package --template template.yaml --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Artifact  --force-upload --output-template-file packaged-template.json'
+          sh 'aws cloudformation package --template template.yaml --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Artifacts  --force-upload --output-template-file packaged-template.json'
         }
       }
     }
@@ -51,7 +51,7 @@ pipeline {
           echo "BUCKET_ARTIFACTORY- ${BUCKET_ARTIFACTORY}"
           unstash 'venv'
           unstash 'aws-sam'
-          sh 'venv/bin/sam deploy -t packaged-template.json --stack-name ${STACK_NAME} --parameter-overrides ParameterKey=FunctionName,ParameterValue=${FUNCTION} ParameterKey=LambdaAlias,ParameterValue=${ENVIRONMENT} ParameterKey=AutoPublishCodeSha,ParameterValue=${BUILD_ID} --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/DeployedArtifacts --capabilities CAPABILITY_IAM --region ${AWS_REGION}'
+          sh 'venv/bin/sam deploy -t packaged-template.json --stack-name ${STACK_NAME} --parameter-overrides ParameterKey=FunctionName,ParameterValue=${FUNCTION} ParameterKey=LambdaAlias,ParameterValue=${ENVIRONMENT} ParameterKey=AutoPublishCodeSha,ParameterValue=${BUILD_ID} --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Templates --capabilities CAPABILITY_IAM --region ${AWS_REGION}'
           //executePipeline();
         }
       }
