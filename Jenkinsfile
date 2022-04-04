@@ -4,7 +4,7 @@ pipeline {
     AWS_REGION = "us-east-1"
     ENVIRONMENT = "${params.ENVIRONMENT}"
     GIT_URL = "${params.GIT_URL}"
-    FUNCTION = "${ENVIRONMENT}"+ "-" +"${params.FUNCTION}"
+    FUNCTION = "${params.FUNCTION}"
     LOWERCASE_FUNCTION = "${params.FUNCTION}".toLowerCase()
     LOWERCASE_ENVIRONMENT = "${params.ENVIRONMENT}".toLowerCase()
     STACK_NAME = "${LOWERCASE_ENVIRONMENT}"+ "-" +"${LOWERCASE_FUNCTION}" + "-" + "stack"
@@ -51,8 +51,9 @@ pipeline {
         withAWSParameterStore(credentialsId: 'BlazePulsePipelineCredentials', naming: 'relative', path: "/${ENVIRONMENT}", recursive: true, regionName: "${AWS_REGION}") {
           echo "BUCKET_ARTIFACTORY- ${BUCKET_ARTIFACTORY}"
           unstash 'venv'
-          unstash 'aws-sam'
-          sh 'venv/bin/sam deploy -t packaged-template.json --stack-name ${STACK_NAME} --parameter-overrides ParameterKey=FunctionName,ParameterValue=${FUNCTION} ParameterKey=LambdaAlias,ParameterValue=${ENVIRONMENT} ParameterKey=AutoPublishCodeSha,ParameterValue=${BUILD_ID} --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Templates --capabilities CAPABILITY_IAM --region ${AWS_REGION}'
+          unstash 'aws-sam'          
+          echo 'Deploying lambda function ${ENVIRONMENT}-${FUNCTION}'
+          sh 'venv/bin/sam deploy -t packaged-template.json --stack-name ${STACK_NAME} --parameter-overrides ParameterKey=FunctionName,ParameterValue=${ENVIRONMENT}-${FUNCTION} ParameterKey=LambdaAlias,ParameterValue=${ENVIRONMENT} ParameterKey=AutoPublishCodeSha,ParameterValue=${BUILD_ID} --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Templates --capabilities CAPABILITY_IAM --region ${AWS_REGION}'
           //executePipeline();
         }
       }
