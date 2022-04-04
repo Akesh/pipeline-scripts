@@ -4,7 +4,7 @@ pipeline {
     AWS_REGION = "us-east-1"
     ENVIRONMENT = "${params.ENVIRONMENT}"
     GIT_URL = "${params.GIT_URL}"
-    FUNCTION = "${params.FUNCTION}"
+    FUNCTION = "${ENVIRONMENT}"+ "-" +"${params.FUNCTION}"
     LOWERCASE_FUNCTION = "${params.FUNCTION}".toLowerCase()
     LOWERCASE_ENVIRONMENT = "${params.ENVIRONMENT}".toLowerCase()
     STACK_NAME = "${LOWERCASE_ENVIRONMENT}"+ "-" +"${LOWERCASE_FUNCTION}" + "-" + "stack"
