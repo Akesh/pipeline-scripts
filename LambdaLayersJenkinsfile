@@ -28,6 +28,9 @@ pipeline {
         //Read AWS SSM parameter store parameters 
         withAWSParameterStore(credentialsId: 'BlazePulsePipelineCredentials', naming: 'relative', path: "/${ENVIRONMENT}", recursive: true, regionName: "${AWS_REGION}") {
           sh 'venv/bin/sam build'
+          dir("${env.WORKSPACE}/${FUNCTION}/nodejs") {
+            sh "npm install"
+          }
           stash includes: '**/.aws-sam/**/*', name: 'aws-sam'
         }
       }
