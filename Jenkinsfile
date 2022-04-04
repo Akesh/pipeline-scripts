@@ -6,7 +6,8 @@ pipeline {
     GIT_URL = "${params.GIT_URL}"
     FUNCTION = "${params.FUNCTION}"
     LOWERCASE_FUNCTION = "${params.FUNCTION}".toLowerCase()
-    STACK_NAME = "${LOWERCASE_FUNCTION}" + "-" + "stack"
+    LOWERCASE_ENVIRONMENT = "${params.ENVIRONMENT}".toLowerCase()
+    STACK_NAME = "${LOWERCASE_ENVIRONMENT}"+ "-" +"${LOWERCASE_FUNCTION}" + "-" + "stack"
   }
   stages {
     stage('Install sam-cli') {
