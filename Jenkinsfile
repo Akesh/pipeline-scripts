@@ -55,7 +55,7 @@ pipeline {
           unstash 'aws-sam'
           script {
             if (ENVIRONMENT == 'PROD') {
-              DEPLOYMENT_STRATEGY="Canary10Percent5Minutes"
+              env.DEPLOYMENT_STRATEGY="Canary10Percent5Minutes"
             }
             echo "Deployment Strategy - ${DEPLOYMENT_STRATEGY}"
           }
