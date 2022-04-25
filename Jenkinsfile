@@ -16,7 +16,7 @@ pipeline {
       steps {
         echo "do_checkout() function started for Environment:- ${ENVIRONMENT}"
         do_checkout()
-        if (env.ENVIRONMENT == 'DEV') {
+        if (ENVIRONMENT == 'DEV') {
         	DEPLOYMENT_STRATEGY ="AllAtOnce"
         } else {
         	DEPLOYMENT_STRATEGY ="Canary"
