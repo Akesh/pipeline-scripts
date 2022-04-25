@@ -78,7 +78,7 @@ def do_checkout() {
 }
 
 //Decide deployment strategy based on the branch selection
-def do_checkout() {
+def get_deployment_strategy() {
   if (ENVIRONMENT == "DEV") {
     echo "Deployment Strategy - "${DEPLOYMENT_STRATEGY}
   } else if (ENVIRONMENT == "PROD") {
