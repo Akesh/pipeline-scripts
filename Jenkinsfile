@@ -21,7 +21,7 @@ pipeline {
         } else {
         	DEPLOYMENT_STRATEGY ="Canary"
         }
-        echo 'Deployment Strategy - '${DEPLOYMENT_STRATEGY}
+        echo "Deployment Strategy - ${DEPLOYMENT_STRATEGY}"
       }
     }   
   }
