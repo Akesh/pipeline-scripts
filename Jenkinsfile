@@ -37,10 +37,10 @@ pipeline {
         unstash 'venv'
         //Read AWS SSM parameter store parameters 
         withAWSParameterStore(credentialsId: 'BlazePulsePipelineCredentials', naming: 'relative', path: "/${ENVIRONMENT}", recursive: true, regionName: "${AWS_REGION}") {
-          dir("${env.WORKSPACE}/${FUNCTION}") {
-            sh "zip -qr ${BUILD_ID}.zip *"
-            sh "ls *.zip"
-          }
+          //dir("${env.WORKSPACE}/${FUNCTION}") {
+          //  sh "zip -qr ${BUILD_ID}.zip *"
+          //  sh "ls *.zip"
+          //}
           sh 'aws cloudformation package --template template.yaml --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Artifacts  --force-upload --output-template-file packaged-template.json'
         }
       }
