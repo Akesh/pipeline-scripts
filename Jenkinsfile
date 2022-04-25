@@ -15,9 +15,8 @@ pipeline {
       steps {
         echo "do_checkout() function started for Environment:- ${ENVIRONMENT}"
         do_checkout()
-        script {
-            def deployment_strategy = get_deployment_strategy()
-            echo 'Deployment Strategy - '${deployment_strategy}
+        script {            
+            echo 'Deployment Strategy - 'get_deployment_strategy()
         }
       }
     }   
