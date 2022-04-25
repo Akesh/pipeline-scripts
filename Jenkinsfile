@@ -8,7 +8,8 @@ pipeline {
     LOWERCASE_FUNCTION = "${params.FUNCTION}".toLowerCase()
     LOWERCASE_ENVIRONMENT = "${params.ENVIRONMENT}".toLowerCase()
     STACK_NAME = "${LOWERCASE_ENVIRONMENT}"+ "-" +"${LOWERCASE_FUNCTION}" + "-" + "stack"
-    BUCKET_ARTIFACTORY ="blazepulse-artifactory-bucket"
+    BUCKET_ARTIFACTORY = "blazepulse-artifactory-bucket"
+    DEPLOYMENT_STRATEGY = "AllAtOnce"
   }
   stages {
     stage('Install sam-cli') {
@@ -54,7 +55,8 @@ pipeline {
           unstash 'venv'
           unstash 'aws-sam'          
           echo 'Deploying lambda function ${ENVIRONMENT}-${FUNCTION}'
-          sh 'venv/bin/sam deploy -t packaged-template.json --stack-name ${STACK_NAME} --parameter-overrides ParameterKey=FunctionName,ParameterValue=${ENVIRONMENT}-${FUNCTION} ParameterKey=Environment,ParameterValue=${ENVIRONMENT} ParameterKey=AutoPublishCodeSha,ParameterValue=${BUILD_ID} --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Templates --capabilities CAPABILITY_IAM --region ${AWS_REGION}'
+          echo 'Deployment strategy - ${DEPLOYMENT_STRATEGY}'
+          sh 'venv/bin/sam deploy -t packaged-template.json --stack-name ${STACK_NAME} --parameter-overrides ParameterKey=FunctionName,ParameterValue=${ENVIRONMENT}-${FUNCTION} ParameterKey=Environment,ParameterValue=${ENVIRONMENT} ParameterKey=AutoPublishCodeSha,ParameterValue=${BUILD_ID} ParameterKey=DeploymentStrategy,ParameterValue=${DEPLOYMENT_STRATEGY} --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Templates --capabilities CAPABILITY_IAM --region ${AWS_REGION}'
           //executePipeline();
         }
       }
@@ -72,5 +74,14 @@ def do_checkout() {
     stage('PROD Git Checkout') {
       git branch: '$ENVIRONMENT', credentialsId: 'd6aa4510-b9b1-44d1-b0ff-e9d3de1d5428', url: GIT_URL
     }
+  }
+}
+
+//Decide deployment strategy based on the branch selection
+def do_checkout() {
+  if (ENVIRONMENT == "DEV") {
+    echo "Deployment Strategy - "${DEPLOYMENT_STRATEGY}
+  } else if (ENVIRONMENT == "PROD") {
+  	DEPLOYMENT_STRATEGY = "Canary10Percent5Minutes"
   }
 }
