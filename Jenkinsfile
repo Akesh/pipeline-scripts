@@ -16,12 +16,14 @@ pipeline {
       steps {
         echo "do_checkout() function started for Environment:- ${ENVIRONMENT}"
         do_checkout()
-        if (ENVIRONMENT == 'DEV') {
-        	DEPLOYMENT_STRATEGY ="AllAtOnce"
-        } else {
-        	DEPLOYMENT_STRATEGY ="Canary"
-        }
-        echo "Deployment Strategy - ${DEPLOYMENT_STRATEGY}"
+        script {
+	         if (ENVIRONMENT == 'DEV') {
+	        	DEPLOYMENT_STRATEGY ="AllAtOnce"
+	        }else {
+	        	DEPLOYMENT_STRATEGY ="Canary"
+	        }
+	        echo "Deployment Strategy - ${DEPLOYMENT_STRATEGY}"   
+        }        
       }
     }   
   }
