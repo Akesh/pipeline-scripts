@@ -9,7 +9,6 @@ pipeline {
     LOWERCASE_ENVIRONMENT = "${params.ENVIRONMENT}".toLowerCase()
     STACK_NAME = "${LOWERCASE_ENVIRONMENT}"+ "-" +"${LOWERCASE_FUNCTION}" + "-" + "stack"
     BUCKET_ARTIFACTORY = "blazepulse-artifactory-bucket"
-    DEPLOYMENT_STRATEGY = "AllAtOnce"
   }
   stages {
     stage('Install sam-cli') {
@@ -22,45 +21,12 @@ pipeline {
       steps {
         echo "do_checkout() function started for Environment:- ${ENVIRONMENT}"
         do_checkout()
-      }
-    }
-    stage('Build') {
-      steps {
-        unstash 'venv'
-        //Read AWS SSM parameter store parameters 
-        withAWSParameterStore(credentialsId: 'BlazePulsePipelineCredentials', naming: 'relative', path: "/${ENVIRONMENT}", recursive: true, regionName: "${AWS_REGION}") {
-          sh 'venv/bin/sam build'
-          stash includes: '**/.aws-sam/**/*', name: 'aws-sam'
+        script {
+            def deployment_strategy = get_deployment_strategy()
+            echo 'Deployment Strategy - ${deployment_strategy}'
         }
       }
-    }
-    stage('Package') {
-      steps {
-        unstash 'venv'
-        //Read AWS SSM parameter store parameters 
-        withAWSParameterStore(credentialsId: 'BlazePulsePipelineCredentials', naming: 'relative', path: "/${ENVIRONMENT}", recursive: true, regionName: "${AWS_REGION}") {
-          //dir("${env.WORKSPACE}/${FUNCTION}") {
-          //  sh "zip -qr ${BUILD_ID}.zip *"
-          //  sh "ls *.zip"
-          //}
-          sh 'aws cloudformation package --template template.yaml --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Artifacts  --force-upload --output-template-file packaged-template.json'
-        }
-      }
-    }
-    stage('Deploy') {
-      steps {
-        //Read AWS SSM parameter store parameters 
-        withAWSParameterStore(credentialsId: 'BlazePulsePipelineCredentials', naming: 'relative', path: "/${ENVIRONMENT}", recursive: true, regionName: "${AWS_REGION}") {
-          echo "BUCKET_ARTIFACTORY- ${BUCKET_ARTIFACTORY}"
-          unstash 'venv'
-          unstash 'aws-sam'          
-          echo 'Deploying lambda function ${ENVIRONMENT}-${FUNCTION}'
-          echo 'Deployment strategy - ${DEPLOYMENT_STRATEGY}'
-          sh 'venv/bin/sam deploy -t packaged-template.json --stack-name ${STACK_NAME} --parameter-overrides ParameterKey=FunctionName,ParameterValue=${ENVIRONMENT}-${FUNCTION} ParameterKey=Environment,ParameterValue=${ENVIRONMENT} ParameterKey=AutoPublishCodeSha,ParameterValue=${BUILD_ID} ParameterKey=DeploymentStrategy,ParameterValue=${DEPLOYMENT_STRATEGY} --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Templates --capabilities CAPABILITY_IAM --region ${AWS_REGION}'
-          //executePipeline();
-        }
-      }
-    }
+    }   
   }
 }
 
@@ -79,9 +45,12 @@ def do_checkout() {
 
 //Decide deployment strategy based on the branch selection
 def get_deployment_strategy() {
+  ALL_AT_ONCE_DEPLOYMENT= "AllAtOnce"
+  CANARY_DEPLOYMENT= "Canary10Percent5Minutes"
   if (ENVIRONMENT == "DEV") {
-    echo "Deployment Strategy - "${DEPLOYMENT_STRATEGY}
+    return ALL_AT_ONCE_DEPLOYMENT
   } else if (ENVIRONMENT == "PROD") {
-  	DEPLOYMENT_STRATEGY = "Canary10Percent5Minutes"
+  	return CANARY_DEPLOYMENT
   }
+  return ALL_AT_ONCE_DEPLOYMENT
 }
