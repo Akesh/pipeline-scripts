@@ -9,15 +9,19 @@ pipeline {
     LOWERCASE_ENVIRONMENT = "${params.ENVIRONMENT}".toLowerCase()
     STACK_NAME = "${LOWERCASE_ENVIRONMENT}"+ "-" +"${LOWERCASE_FUNCTION}" + "-" + "stack"
     BUCKET_ARTIFACTORY = "blazepulse-artifactory-bucket"
+    DEPLOYMENT_STRATEGY= "AllAtOnce"
   }
   stages {    
     stage('Initiate') {
       steps {
         echo "do_checkout() function started for Environment:- ${ENVIRONMENT}"
         do_checkout()
-        script {            
-            echo 'Deployment Strategy - 'get_deployment_strategy()
+        if (env.ENVIRONMENT == 'DEV') {
+        	DEPLOYMENT_STRATEGY ="AllAtOnce"
+        } else {
+        	DEPLOYMENT_STRATEGY ="Canary"
         }
+        echo 'Deployment Strategy - '${DEPLOYMENT_STRATEGY}
       }
     }   
   }
@@ -34,16 +38,4 @@ def do_checkout() {
       git branch: '$ENVIRONMENT', credentialsId: 'd6aa4510-b9b1-44d1-b0ff-e9d3de1d5428', url: GIT_URL
     }
   }
-}
-
-//Decide deployment strategy based on the branch selection
-def get_deployment_strategy() {
-  ALL_AT_ONCE_DEPLOYMENT= "AllAtOnce"
-  CANARY_DEPLOYMENT= "Canary10Percent5Minutes"
-  if (ENVIRONMENT == "DEV") {
-    return ALL_AT_ONCE_DEPLOYMENT
-  } else if (ENVIRONMENT == "PROD") {
-  	return CANARY_DEPLOYMENT
-  }
-  return ALL_AT_ONCE_DEPLOYMENT
 }
