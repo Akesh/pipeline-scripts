@@ -9,6 +9,7 @@ pipeline {
     LOWERCASE_ENVIRONMENT = "${params.ENVIRONMENT}".toLowerCase()
     STACK_NAME = "${LOWERCASE_ENVIRONMENT}" + "-" + "${LOWERCASE_FUNCTION}" + "-" + "stack"
     BUCKET_ARTIFACTORY = "blazepulse-artifactory-bucket"
+    DEPLOYMENT_STRATEGY = define_depployment_strategy()
   }
   stages {
     stage('Install sam-cli') {
@@ -19,6 +20,7 @@ pipeline {
     }
     stage('Initiate') {
       steps {
+      	echo "Deployment strategy:- ${DEPLOYMENT_STRATEGY}"
         echo "do_checkout() function started for Environment:- ${ENVIRONMENT}"
         do_checkout()
       }
@@ -53,12 +55,12 @@ pipeline {
           echo "BUCKET_ARTIFACTORY- ${BUCKET_ARTIFACTORY}"
           unstash 'venv'
           unstash 'aws-sam'
-          script {
-            if (ENVIRONMENT == 'PROD') {
-              env.DEPLOYMENT_STRATEGY="Canary10Percent5Minutes"
-            }
-            echo "Deployment Strategy - ${DEPLOYMENT_STRATEGY}"
-          }
+          //script {
+           // if (ENVIRONMENT == 'PROD') {
+            //  env.DEPLOYMENT_STRATEGY="Canary10Percent5Minutes"
+            //}
+            //echo "Deployment Strategy - ${DEPLOYMENT_STRATEGY}"
+         // }
           echo 'Deploying lambda function ${ENVIRONMENT}-${FUNCTION}'
           sh 'venv/bin/sam deploy -t packaged-template.json --stack-name ${STACK_NAME} --parameter-overrides ParameterKey=FunctionName,ParameterValue=${ENVIRONMENT}-${FUNCTION} ParameterKey=Environment,ParameterValue=${ENVIRONMENT} ParameterKey=AutoPublishCodeSha,ParameterValue=${BUILD_ID} ParameterKey=DeploymentStrategy,ParameterValue=${DEPLOYMENT_STRATEGY} --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Templates --capabilities CAPABILITY_IAM --region ${AWS_REGION}'
           //executePipeline();
@@ -79,4 +81,13 @@ def do_checkout() {
       git branch: '$ENVIRONMENT', credentialsId: 'd6aa4510-b9b1-44d1-b0ff-e9d3de1d5428', url: GIT_URL
     }
   }
+}
+
+
+def define_depployment_strategy() {
+	if (ENVIRONMENT == "PROD") {
+		return 'Canary10Percent5Minutes'		
+	}else{
+	    return 'AllAtOnce'
+	}  	
 }
