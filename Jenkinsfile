@@ -10,20 +10,14 @@ pipeline {
     STACK_NAME = "${LOWERCASE_ENVIRONMENT}"+ "-" +"${LOWERCASE_FUNCTION}" + "-" + "stack"
     BUCKET_ARTIFACTORY = "blazepulse-artifactory-bucket"
   }
-  stages {
-    stage('Install sam-cli') {
-      steps {
-        sh 'python3 -m venv venv && venv/bin/pip3 install aws-sam-cli'
-        stash includes: '**/venv/**/*', name: 'venv'
-      }
-    }
+  stages {    
     stage('Initiate') {
       steps {
         echo "do_checkout() function started for Environment:- ${ENVIRONMENT}"
         do_checkout()
         script {
             def deployment_strategy = get_deployment_strategy()
-            echo 'Deployment Strategy - ${deployment_strategy}'
+            echo 'Deployment Strategy - '${deployment_strategy}
         }
       }
     }   
