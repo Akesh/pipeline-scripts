@@ -7,7 +7,7 @@ pipeline {
     FUNCTION = "${params.FUNCTION}"
     LOWERCASE_FUNCTION = "${params.FUNCTION}".toLowerCase()
     LOWERCASE_ENVIRONMENT = "${params.ENVIRONMENT}".toLowerCase()
-    STACK_NAME = "${LOWERCASE_ENVIRONMENT}"+ "-" +"${LOWERCASE_FUNCTION}" + "-" + "stack"
+    STACK_NAME = "${LOWERCASE_ENVIRONMENT}" + "-" + "${LOWERCASE_FUNCTION}" + "-" + "stack"
   }
   stages {
     stage('Install sam-cli') {
@@ -54,12 +54,18 @@ pipeline {
         withAWSParameterStore(credentialsId: 'BlazePulsePipelineCredentials', naming: 'relative', path: "/${ENVIRONMENT}", recursive: true, regionName: "${AWS_REGION}") {
           echo "BUCKET_ARTIFACTORY- ${BUCKET_ARTIFACTORY}"
           unstash 'venv'
-          unstash 'aws-sam'          
+          unstash 'aws-sam'
           echo 'Deploying lambda layer ${ENVIRONMENT}-${FUNCTION}'
           sh 'venv/bin/sam deploy -t packaged-template.json --stack-name ${STACK_NAME} --parameter-overrides ParameterKey=FunctionName,ParameterValue=${ENVIRONMENT}-${FUNCTION} ParameterKey=Environment,ParameterValue=${ENVIRONMENT} --s3-bucket ${BUCKET_ARTIFACTORY} --s3-prefix ${ENVIRONMENT}/${FUNCTION}/Templates --capabilities CAPABILITY_IAM --region ${AWS_REGION}'
           //executePipeline();
         }
       }
+    }
+  }
+  post {
+    success {
+      echo 'Build other pipelines'
+      build job: 'Pipeline-CMPInfrastructureServiceLambda', parameters: [string(name: 'ENVIRONMENT', value: "${ENVIRONMENT}")]
     }
   }
 }
