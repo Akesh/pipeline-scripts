@@ -8,6 +8,7 @@ pipeline {
     LOWERCASE_FUNCTION = "${params.FUNCTION}".toLowerCase()
     LOWERCASE_ENVIRONMENT = "${params.ENVIRONMENT}".toLowerCase()
     STACK_NAME = "${LOWERCASE_ENVIRONMENT}" + "-" + "${LOWERCASE_FUNCTION}" + "-" + "stack"
+    BUCKET_ARTIFACTORY = "blazepulse-artifactory-bucket"
   }
   stages {
     stage('Install sam-cli') {
